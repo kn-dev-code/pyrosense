@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import create_db_and_tables
-
+from app.routes.main_router import main_router
 app = FastAPI(title=settings.PROJECT_NAME)
 
 

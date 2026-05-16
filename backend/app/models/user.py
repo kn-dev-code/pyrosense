@@ -1,6 +1,11 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
 from datetime import datetime
+from enum import Enum
+
+class UserRole(str, Enum):
+    USER = "user"
+    ADMIN = "admin"
 
 
 class UserRecord(SQLModel, table=True):
@@ -9,4 +14,5 @@ class UserRecord(SQLModel, table=True):
     email: str = Field(unique=True)
     hashed_password: str
     is_active: bool
-    role: str = Field(default="user")
+    role: UserRole = Field(default=UserRole.USER)
+
