@@ -1,3 +1,45 @@
-from fastapi import APIRouter
-from app.controller.user_controller import create_user, get_user, update_user, delete_user
+from fastapi import APIRouter, Depends, Response
+from sqlmodel import Session
+from app.core.database import get_session
+from app.controller.user_controller import create_user_controller, login_user_controller, update_user_controller, delete_user_controller, user_data
+from app.schemas.user_schema import UserCreate, UserLogin, UserUpdate
 
+user_router = APIRouter()
+
+
+@user_router.post("/register")
+def register(register_data: UserCreate, db: Session = Depends(get_session)):
+  return create_user_controller(user_data, db)
+
+
+@user_router.post("/login")
+def login(login_data: UserLogin, db:Session = Depends(get_session)):
+  return login_user_controller(user_data, db)
+
+@user_router.patch("/update")
+def update(update_data: UserUpdate, db:Session = Depends(get_session)):
+  return update_user_controller(user_data, db)
+
+@user_router.delete("/delete/{user_id}")
+def delete(user_id: int, response: Response, db):
+  result = delete_user_controller(user_id, db)
+
+  response.delete_cookie(
+    key="access_token",
+        httponly=True,
+        samesite="lax",
+        secure=True
+  )
+
+  return result
+
+
+@user_router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax",
+        secure=True
+    )
+    return {"status": "success", "message": "Successfully logged out"}

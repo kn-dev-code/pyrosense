@@ -56,3 +56,43 @@ def login_user_controller(user_data: UserLogin, db: Session):
             "role": user.role
         }
     }
+
+def update_user_controller(user_id: int, user_data: UserCreate, db: Session):
+    find_user = select(UserRecord).where(UserRecord.id == user_id)
+
+    user = db.exec(find_user).first()
+
+    if not user:
+        raise HTTPException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail = "Invalid email or password"
+        )
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code = status.HTTP_403_FORBIDDEN,
+            detail = "This account has been deactivated"
+        )
+    user.usernmae = user_data.username
+    user.email = user_data.email
+    user.hashed_password = f"hashed_version_of_{user_data.password}"
+
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+def delete_user_controller(user_id: int, db:Session):
+    user = db.get(UserRecord, user_id)
+
+
+    if not user:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "User does not exist"
+        )
+
+    db.delete(user)
+    db.commit()
+
+    return {"status": "success", "message": "Account permanently deleted"}
