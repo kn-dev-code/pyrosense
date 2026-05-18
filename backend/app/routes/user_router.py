@@ -1,27 +1,27 @@
 from fastapi import APIRouter, Depends, Response
 from sqlmodel import Session
 from app.core.database import get_session
-from app.controller.user_controller import create_user_controller, login_user_controller, update_user_controller, delete_user_controller, user_data
+from app.controllers.user_controller import create_user_controller, login_user_controller, update_user_controller, delete_user_controller
 from app.schemas.user_schema import UserCreate, UserLogin, UserUpdate
+from app.core.security import create_access_token, verify_password
 
 user_router = APIRouter()
 
 
 @user_router.post("/register")
 def register(register_data: UserCreate, db: Session = Depends(get_session)):
-  return create_user_controller(user_data, db)
-
+  return create_user_controller(register_data, db)
 
 @user_router.post("/login")
-def login(login_data: UserLogin, db:Session = Depends(get_session)):
-  return login_user_controller(user_data, db)
+def login(login_data: UserLogin, response: Response, db:Session = Depends(get_session)):
+  return login_user_controller(login_data, response, db)
 
 @user_router.patch("/update")
-def update(update_data: UserUpdate, db:Session = Depends(get_session)):
-  return update_user_controller(user_data, db)
+def update(user_id: int, update_data: UserUpdate, db:Session = Depends(get_session)):
+  return update_user_controller(user_id, update_data, db)
 
 @user_router.delete("/delete/{user_id}")
-def delete(user_id: int, response: Response, db):
+def delete(user_id: int, response: Response, db:Session = Depends(get_session)):
   result = delete_user_controller(user_id, db)
 
   response.delete_cookie(
