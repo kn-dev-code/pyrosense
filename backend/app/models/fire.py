@@ -9,4 +9,4 @@ class FireRecord(SQLModel, table=True):
     longitude: float
     fire_power: float
     acquired_date: datetime
-    confidence: str
+    confidence: bool
