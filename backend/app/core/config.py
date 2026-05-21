@@ -3,7 +3,10 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings): 
 
     DATABASE_URL: str
-    NASA_API_KEY: str
+    NASA_MAP_KEY: str
+    NASA_SOURCE: str = "VIIRS_SNPP_NRT"
+    NASA_DAYS: int = 1
+    NASA_BOUNDING_BOX: str
     PROJECT_NAME: str = "Wildfire Intelligence Engine"
     SECRET_KEY: str
 
