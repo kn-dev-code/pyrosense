@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:16-alpine
@@ -24,6 +26,19 @@ services:
       - ./backend/.env
     volumes:
       - ./backend/app:/code/app
+
+  frontend:
+    build:
+      context: ./client/wildfire-ui
+      dockerfile: Dockerfile
+    container_name: wildfire_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client/wildfire-ui:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
 
 volumes: 
   postgres_data:
