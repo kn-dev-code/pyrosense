@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
-import { IconWithBackground } from "../ui";
-import { Button } from "../ui/components/ui/button";
+import { IconWithBackground } from "../../ui";
+import { Button } from "../../ui/components/ui/button";
 import {
   FeatherSparkles,
   FeatherMapPin,
   FeatherActivity,
   FeatherClipboardList,
 } from "@subframe/core";
+import Footer from "../constants/footer";
 
 const Dashboard = () => {
   const cards = {
@@ -102,6 +103,7 @@ const Dashboard = () => {
           })}
         </div>
       </div>
+      <Footer/>
     </div>
   );
 };
