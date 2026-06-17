@@ -3,13 +3,10 @@ import { Button } from "../../../ui/components/ui/button";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Field,
-  FieldLabel,
-  FieldGroup,
-} from "../../../ui/components/ui/field";
+import { Field, FieldLabel, FieldGroup } from "../../../ui/components/ui/field";
 import { Input } from "../../../ui/components/ui/input";
 import { Link } from "react-router-dom";
+import { FieldDescription } from "../../../ui/components/ui/field";
 
 const SignUp = () => {
   const userValidation = z.object({
@@ -29,7 +26,11 @@ const SignUp = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<userRegister>) => {};
+  const onSubmit = (data: userRegister) => {
+
+  }
+
+
   return (
     <>
       <div className="bg-black h-screen flex flex-col justify-center place-items-center overflow-hidden overscroll-none">
@@ -41,11 +42,11 @@ const SignUp = () => {
           </div>
           {/* Welcome Header */}
           <div className="flex flex-col pb-[70%]">
-            <h2 className="text-xl font-bold">Welcome back</h2>
-            <p>Sign in to your wildfire intelligence dashboard</p>
+            <h2 className="text-xl font-bold">Create your account</h2>
+            <p>Start monitoring wildfire risk with real-time intelligence</p>
           </div>
           {/* Google Directory Header */}
-          <div className="flex flex-col pb-[60%] gap-y-3">
+          <div className="flex flex-col pb-[50%] gap-y-1">
             <Button className="border-2 border-[#a19f9f] p-4 w-sm h-md cursor-pointer hover:bg-[#605d5d] hover:text-white transition-all duration-300 hover:scale-105">
               <FeatherChrome />
               Continue with Google
@@ -56,8 +57,12 @@ const SignUp = () => {
             </span>
             <div className="flex h-px grow shrink-0 basis-0 flex-col items-center gap-2 bg-neutral-border" />
             {/* Form Component */}
-            <form>
+            <form onSubmit ={formData.handleSubmit(onSubmit)}>
               <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="username">Username</FieldLabel>
+                  <Input id="username" placeholder="johndoe450" />
+                </Field>
                 <Field>
                   <FieldLabel htmlFor="email">Email</FieldLabel>
                   <Input id="name" placeholder="you@pyrosense.io" required />
@@ -69,15 +74,20 @@ const SignUp = () => {
                     placeholder="Enter your password"
                     required
                   />
-                  <Link to = "/forgot-password" className = "pl-[68%] text-[#2563EB] text-sm">
-                    Forgot password?
-                  </Link>
                 </Field>
               </FieldGroup>
-              <Button className = "bg-[#2563EB] text-white w-sm p-5 relative top-5 rounded-lg hover:cursor-pointer hover:scale-105 duration-300 hover:bg-[#537de7] hover:text-black">
+              <Button className="bg-[#2563EB] text-white w-sm p-5 relative top-5 rounded-lg hover:cursor-pointer hover:scale-105 duration-300 hover:bg-[#537de7] hover:text-black">
                 Sign Up
               </Button>
             </form>
+            <div className="pt-5 flex flex-col justify-center items-center">
+              <FieldDescription>
+                Already have an account?{" "}
+                <Link className="text-[#2563EB] no-underline" to="/login">
+                  Sign In
+                </Link>
+              </FieldDescription>
+            </div>
           </div>
         </div>
       </div>

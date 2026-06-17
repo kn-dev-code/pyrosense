@@ -7,6 +7,7 @@ import {
   Field,
   FieldLabel,
   FieldGroup,
+  FieldDescription,
 } from "../../../ui/components/ui/field";
 import { Input } from "../../../ui/components/ui/input";
 import { Link } from "react-router-dom";
@@ -27,7 +28,10 @@ const SignIn = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<userLogin>) => {};
+  const onSubmit = (data: z.infer<userLogin>) => {
+
+  };
+
   return (
     <>
       <div className="bg-black h-screen flex flex-col justify-center place-items-center overflow-hidden overscroll-none">
@@ -43,7 +47,7 @@ const SignIn = () => {
             <p>Sign in to your wildfire intelligence dashboard</p>
           </div>
           {/* Google Directory Header */}
-          <div className="flex flex-col pb-[60%] gap-y-3">
+          <div className="flex flex-col pb-[50%] gap-y-3">
             <Button className="border-2 border-[#a19f9f] p-4 w-sm h-md cursor-pointer hover:bg-[#605d5d] hover:text-white transition-all duration-300 hover:scale-105">
               <FeatherChrome />
               Continue with Google
@@ -54,7 +58,7 @@ const SignIn = () => {
             </span>
             <div className="flex h-px grow shrink-0 basis-0 flex-col items-center gap-2 bg-neutral-border" />
             {/* Form Component */}
-            <form>
+            <form onSubmit = {formData.handleSubmit(onSubmit)}>
               <FieldGroup>
                 <Field>
                   <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -67,15 +71,26 @@ const SignIn = () => {
                     placeholder="Enter your password"
                     required
                   />
-                  <Link to = "/forgot-password" className = "pl-[68%] text-[#2563EB] text-sm">
+                  <Link
+                    to="/forgot-password"
+                    className="pl-[68%] text-[#2563EB] text-sm"
+                  >
                     Forgot password?
                   </Link>
                 </Field>
               </FieldGroup>
-              <Button className = "bg-[#2563EB] text-white w-sm p-5 relative top-5 rounded-lg hover:cursor-pointer hover:scale-105 duration-300 hover:bg-[#537de7] hover:text-black">
+              <Button className="bg-[#2563EB] text-white w-sm p-5 relative top-5 rounded-lg hover:cursor-pointer hover:scale-105 duration-300 hover:bg-[#537de7] hover:text-black">
                 Sign In
               </Button>
             </form>
+            <div className = "pt-5 flex flex-col justify-center items-center">
+              <FieldDescription>
+                Don't have an account?{" "}
+                <Link className="text-[#2563EB] no-underline" to="/register">
+                  Sign Up
+                </Link>
+              </FieldDescription>
+            </div>
           </div>
         </div>
       </div>
