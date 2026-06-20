@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response
 from sqlmodel import Session
 from app.core.database import get_db
-from app.controllers.user_controller import create_user_controller, login_user_controller, update_user_controller, delete_user_controller
+from app.controllers.user_controller import create_user_controller, login_user_controller, update_user_controller, delete_user_controller, google_auth_controller
 from app.schemas.user_schema import UserCreate, UserLogin, UserUpdate
 from app.core.security import create_access_token, verify_password
 
@@ -33,7 +33,6 @@ def delete(user_id: int, response: Response, db:Session = Depends(get_db)):
 
   return result
 
-
 @user_router.post("/logout")
 def logout(response: Response):
     response.delete_cookie(
@@ -43,3 +42,4 @@ def logout(response: Response):
         secure=True
     )
     return {"status": "success", "message": "Successfully logged out"}
+

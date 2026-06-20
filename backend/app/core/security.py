@@ -3,7 +3,7 @@ import jwt
 from passlib.context import CryptContext
 from app.core.config import settings
 from fastapi import HTTPException, status, Request
-
+import httpx
 
 pwd_context = CryptContext(schemes = ["bcrypt"], deprecated="auto")
 
@@ -50,3 +50,4 @@ def get_current_user_from_cookie(request: Request) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid security token."
         )
+    

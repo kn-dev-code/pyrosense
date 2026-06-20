@@ -63,7 +63,7 @@ export const useUpdateAllUsers = () => {
 export const useRegisterUser = () => {
   return useMutation({
     mutationFn: async (credentials: RegisterType) => {
-      const {data} = await API.post("/register", credentials)
+      const {data} = await API.post("/api/v1/users/register", credentials)
       return data;
     }
   })
@@ -73,7 +73,7 @@ export const useLogUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async(credentials: LoginType) => {
-      const {data} = await API.post("/login", credentials)
+      const {data} = await API.post("/api/v1/users/login", credentials)
       return data;
     },
     onSuccess: (userData) => {
@@ -86,13 +86,29 @@ export const useUpdateUser = (userId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async(credentials: UpdateType) => {
-      const {data} = await API.patch(`/update/${userId}`, credentials)
+      const {data} = await API.patch(`/api/v1/users/update/${userId}`, credentials)
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['users', 'profile']})
     }
   })
+}
+
+export const useLogout = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async() => {
+      await API.post("/api/v1/users/logout")
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      localStorage.removeItem('authToken');
+    },
+    onError: (error) => {
+      console.error("Logout error", error)
+    }
+  }) 
 }
 
 // isUpdating, isLoggingOut, isSigningUp, isLoggingIn

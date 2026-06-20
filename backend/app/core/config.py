@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     DB_NAME: str
 
+    # Google Auth
+    GOOGLE_CLIENT_ID: int
+    CLIENT_SECRET: str
+    GOOGLE_REDIRECT_URI: str
+
 
     class Config:
         env_file = ".env"

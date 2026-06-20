@@ -3,6 +3,8 @@ from sqlmodel import Session, select
 from app.models.user import UserRecord 
 from app.schemas.user_schema import UserCreate, UserLogin
 from app.core.security import verify_password, create_access_token
+from app.core.config import Settings
+import httpx
 
 def create_user_controller(register_data: UserCreate, db: Session):
    
@@ -102,3 +104,72 @@ def delete_user_controller(user_id: int, db:Session):
     db.commit()
 
     return {"status": "success", "message": "Account permanently deleted"}
+
+async def google_auth_controller(auth_code: str, response: Response, db: Session):
+    
+    async with httpx.AsyncClient() as client:
+        google_token_res = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": auth_code,
+                "client_id": Settings.GOOGLE_CLIENT_ID,
+                "client_secret": Settings.GOOGLE_CLIENT_SECRET,
+                "redirect_uri": "postmessage", 
+                "grant_type": "authorization_code",
+            },
+        )
+    
+    if google_token_res.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to verify code with Google")
+    
+    google_tokens = google_token_res.json()
+    access_token = google_tokens.get("access_token")
+
+    async with httpx.AsyncClient() as client:
+        user_info_res = await client.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+    
+    google_user = user_info_res.json()
+    email = google_user.get("email")
+    username = google_user.get("name", email.split("@")[0]) 
+
+    find_user = select(UserRecord).where(UserRecord.email == email)
+    user = db.exec(find_user).first()
+
+    if not user:
+        user = UserRecord(
+            username=username,
+            email=email,
+            hashed_password="OAUTH_USER_NO_PASSWORD", 
+            is_active=True
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="This account has been deactivated")
+
+    token_payload = {"sub": str(user.id), "email": user.email, "role": user.role}
+    system_token = create_access_token(data=token_payload)
+
+    response.set_cookie(
+        key="access_token",
+        value=system_token,
+        httponly=True,
+        samesite="lax",
+        secure=True,
+        max_age=900
+    )
+
+    return {
+        "status": "success",
+        "message": "Google authentication successful",
+        "user": {
+            "username": user.username,
+            "email": user.email,
+            "role": user.role
+        }
+    }

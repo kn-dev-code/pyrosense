@@ -12,7 +12,8 @@ import {
 import { Input } from "../../../ui/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { useLogUser } from "../../../hooks/use-auth";
-
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
+import { googleLoginAuth } from "../../../hooks/use-google-auth";
 const SignIn = () => {
   const navigate = useNavigate();
   const { mutate: logUser, isPending } = useLogUser();
@@ -44,6 +45,18 @@ const SignIn = () => {
     });
   };
 
+  const handleGoogleResponse = async (
+    credentialResponse: CredentialResponse,
+  ) => {
+    if (!credentialResponse.credential) return;
+    try {
+      const userData = await googleLoginAuth(credentialResponse.credential);
+      // configure toast success
+    } catch (e) {
+      // configure toast error
+    }
+  };
+
   return (
     <>
       <div className="bg-black h-screen flex flex-col justify-center place-items-center overflow-hidden overscroll-none">
@@ -60,10 +73,10 @@ const SignIn = () => {
           </div>
           {/* Google Directory Header */}
           <div className="flex flex-col pb-[50%] gap-y-3">
-            <Button className="border-2 border-[#a19f9f] p-4 w-sm h-md cursor-pointer hover:bg-[#605d5d] hover:text-white transition-all duration-300 hover:scale-105">
-              <FeatherChrome />
-              Continue with Google
-            </Button>
+            <GoogleLogin
+              onSuccess={handleGoogleResponse}
+              onError={() => console.log("Google pop-up failed")}
+            />
             <div className="flex h-px grow shrink-0 basis-0 flex-col items-center gap-2 bg-neutral-border" />
             <span className="text-caption font-caption text-subtext-color text-md">
               or
@@ -94,7 +107,11 @@ const SignIn = () => {
                     required
                     {...register("password")}
                   />
-                  {errors.password && ( <span className = "text-red-500 text-xs">{errors.password.message}</span> )}
+                  {errors.password && (
+                    <span className="text-red-500 text-xs">
+                      {errors.password.message}
+                    </span>
+                  )}
                   <Link
                     to="/forgot-password"
                     className="pl-[68%] text-[#2563EB] text-sm"
