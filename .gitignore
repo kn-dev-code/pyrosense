@@ -3,3 +3,4 @@
 sync.json
 components.json
 .frontend.env
+.env.local
