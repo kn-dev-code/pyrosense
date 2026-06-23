@@ -1,8 +1,8 @@
-from fastapi import HTTPException, status, Response
+from fastapi import HTTPException, status, Response, Request
 from sqlmodel import Session, select
 from app.models.user import UserRecord 
 from app.schemas.user_schema import UserCreate, UserLogin
-from app.core.security import verify_password, create_access_token
+from app.core.security import verify_password, create_access_token, get_current_user_from_cookie
 from app.core.config import Settings
 import httpx
 
@@ -172,4 +172,26 @@ async def google_auth_controller(auth_code: str, response: Response, db: Session
             "email": user.email,
             "role": user.role
         }
+    }
+
+def get_user_controller(request: Request, db:Session):
+    try: 
+        token_payload = get_current_user_from_cookie(request)
+    except HTTPException:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+
+    user_id = token_payload.get("sub")
+    find_user = select(UserRecord).where(UserRecord.id == int(user_id))
+    user = db.exec(find_user).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "status": "success",
+        "message": "User data retrieved successfully",
+        "username": user.username,
+        "role": user.role,
+        "is_active": user.is_active,
     }

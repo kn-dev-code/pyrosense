@@ -18,7 +18,8 @@ app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 origins = [
-   "http://localhost:5173"
+   "http://localhost:5173",
+   "http://localhost:5174",
 ]
 
 app.add_middleware(

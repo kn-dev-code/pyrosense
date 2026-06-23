@@ -25,17 +25,29 @@ export const useGetAllUsers = () => {
   return useQuery<User[]>({
     queryKey: ['users', 'list'],
     queryFn: async() => {
-      const {data} = await API.get('/get-all-users')
+      const {data} = await API.get('/api/v1/get-all-users')
       return data
     }
   })
+}
+
+export const useGetUser = () => {
+  return useQuery<User>({
+    queryKey: ['users', 'profile'],
+    queryFn: async() => {
+      const {data} = await API.get("/api/v1/get-user/me")
+      return data.user;
+    },
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
 }
 
 export const useDeleteAllUsers = () => {
   const queryClient = useQueryClient(); 
   return useMutation({
     mutationFn: async () => {
-      const { data } = await API.delete('/delete-all-users');
+      const { data } = await API.delete('/api/v1/delete-all-users');
       return data;
     },
     onSuccess: () => {
@@ -48,7 +60,7 @@ export const useUpdateAllUsers = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async() => {
-      const {data} = await API.patch('/update-all-users');
+      const {data} = await API.patch('/api/v1/users/update-all-users');
       return data;
     },
     onSuccess: () => {

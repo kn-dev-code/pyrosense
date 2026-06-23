@@ -39,8 +39,7 @@ const SignUp = () => {
   const onSubmit = (data: userRegister) => {
     regUser(data, {
       onSuccess: () => {
-        navigate("/dashboard");
-      },
+        navigate("/")}
     });
   };
 
@@ -56,8 +55,10 @@ const SignUp = () => {
       toast.error("User sign-up unsucessful: ", e)
       console.error(e);
     }
-  };
+  }; 
 
+ 
+  
   return (
     <>
       <div className="bg-black h-screen flex flex-col justify-center place-items-center overflow-hidden overscroll-none">

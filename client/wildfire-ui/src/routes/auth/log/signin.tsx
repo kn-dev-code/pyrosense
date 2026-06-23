@@ -54,7 +54,7 @@ const SignIn = () => {
     try {
       const userData = await googleLoginAuth(credentialResponse.credential);
       toast.success("User sign-in successful!")
-      navigate("/dashboard")
+      navigate("/")
     } catch (e: any) {
       toast.error("User sign-in unsuccessful", e)
       console.error(e)

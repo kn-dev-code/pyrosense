@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, Request
 from sqlmodel import Session
 from app.core.database import get_db
-from app.controllers.user_controller import create_user_controller, login_user_controller, update_user_controller, delete_user_controller, google_auth_controller
+from app.controllers.user_controller import create_user_controller, login_user_controller, update_user_controller, delete_user_controller, google_auth_controller, get_user_controller
 from app.schemas.user_schema import UserCreate, UserLogin, UserUpdate
 from app.core.security import create_access_token, verify_password
 
@@ -47,3 +47,6 @@ def logout(response: Response):
 def google_auth(auth_code: str, response: Response, db: Session = Depends(get_db)):
   return google_auth_controller(auth_code, response,  db)
 
+@user_router.get("/get-user/me")
+def get_user(request: Request, db: Session = Depends(get_db)):
+  return get_user_controller(request=request, db=db)

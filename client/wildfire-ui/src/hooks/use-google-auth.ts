@@ -6,7 +6,8 @@ export const googleLoginAuth = async(credentials: string) => {
     const response = await API.post("/api/v1/users/google-auth", {
     credentials: credentials
   })
-  return response.data;
+  const googleUser = response.data;
+  return googleUser;
   } catch(e) {
     console.error(`API ERROR: ${e}`)
   }
