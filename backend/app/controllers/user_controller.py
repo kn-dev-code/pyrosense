@@ -1,10 +1,14 @@
 from fastapi import HTTPException, status, Response, Request
 from sqlmodel import Session, select
+import os
+from dotenv import load_dotenv
 from app.models.user import UserRecord 
-from app.schemas.user_schema import UserCreate, UserLogin
+from app.schemas.user_schema import UserCreate, UserLogin, TokenBody
 from app.core.security import verify_password, create_access_token, get_current_user_from_cookie, hash_password
 from app.core.config import Settings
 import httpx
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 def create_user_controller(register_data: UserCreate, db: Session):
    
@@ -105,39 +109,13 @@ def delete_user_controller(user_id: int, db:Session):
 
     return {"status": "success", "message": "Account permanently deleted"}
 
-async def google_auth_controller(code: str, state: str, response: Response, db: Session):
+async def google_auth_controller(token_data: TokenBody, response: Response, db: Session):
+    load_dotenv()
+    google_client_id = os.getenv("GOOGLE_CLIENT_ID")
+    id_info = id_token.verify_oauth2_token(token_data, requests.Request(), google_client_id)
     
-    async with httpx.AsyncClient() as client:
-        google_token_res = await client.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "code": code,
-                "client_id": Settings.GOOGLE_CLIENT_ID,
-                "client_secret": Settings.GOOGLE_CLIENT_SECRET,
-                "redirect_uri": "postmessage", 
-                "grant_type": "authorization_code",
-            },
-        )
-    
-    if google_token_res.status_code != 200:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Failed to verify code with Google")
-    
-    google_tokens = google_token_res.json()
-    access_token = google_tokens.get("access_token")
 
-    async with httpx.AsyncClient() as client:
-        user_info_res = await client.get(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"}
-        )
     
-    google_user = user_info_res.json()
-    email = google_user.get("email")
-    username = google_user.get("name", email.split("@")[0]) 
-
-    find_user = select(UserRecord).where(UserRecord.email == email)
-    user = db.exec(find_user).first()
-
     if not user:
         user = UserRecord(
             username=username,

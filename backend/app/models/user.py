@@ -15,4 +15,3 @@ class UserRecord(SQLModel, table=True):
     hashed_password: str
     is_active: bool
     role: UserRole = Field(default=UserRole.USER)
-
