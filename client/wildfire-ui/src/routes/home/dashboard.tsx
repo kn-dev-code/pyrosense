@@ -54,6 +54,24 @@ const Dashboard = () => {
             PyroSense fuses satellite hotspot data with machine learning to score
             wildfire risk in realtime, so response teams act earlier and protect more.
           </p>
+          <div className="flex flex-row gap-x-5">
+          <Button className="bg-[#e9590c] p-5 hover:scale-105">
+            <Link
+              className="text-md font-bold text-white cursor-pointer"
+              to="/predictions"
+            >
+              Make a Prediction
+            </Link>
+          </Button>
+          <Button className="border-2 border-[#737373] p-5 cursor-pointer hover:scale-105">
+            <Link
+              className="text-[#222222] hover:text-white transition-all duration-300 cursor-pointer"
+              to="/prediction-log"
+            >
+              History
+            </Link>
+          </Button>
+        </div>
         </>
       );
     }
@@ -67,21 +85,6 @@ const Dashboard = () => {
           PyroSense fuses satellite hotspot data with machine learning to score
           wildfire risk in realtime, so response teams act earlier and protect more.
         </p>
-      </>
-    );
-  };
-
-  return (
-    <div className="w-screen h-screen">
-      {/* Black Container -> Description/Intro */}
-      <div className="flex flex-col h-screen bg-black justify-center items-center text-center gap-y-5 pb-80">
-        <div className="bg-white rounded-sm p-2 w-[22%] h-8 py-1 pr-4 flex items-center justify-center gap-x-2">
-          <FeatherSparkles className="text-[#e9590c]" />
-          <span className="text-black font-medium text-sm">Powered by XGBoost • NASA FIRMS</span>
-        </div>
-        
-        {renderHeroSection()}
-
         <div className="flex flex-row gap-x-5">
           <Button className="bg-[#e9590c] p-5 hover:scale-105">
             <Link
@@ -100,6 +103,20 @@ const Dashboard = () => {
             </Link>
           </Button>
         </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="w-screen h-screen">
+      {/* Black Container -> Description/Intro */}
+      <div className="flex flex-col h-screen bg-black justify-center items-center text-center gap-y-5 pb-80">
+        <div className="bg-white rounded-sm p-2 w-[22%] h-8 py-1 pr-4 flex items-center justify-center gap-x-2">
+          <FeatherSparkles className="text-[#e9590c]" />
+          <span className="text-black font-medium text-sm">Powered by XGBoost • NASA FIRMS</span>
+        </div>
+        
+        {renderHeroSection()}
       </div>
 
       {/* White Container -> More Information/Benefits */}

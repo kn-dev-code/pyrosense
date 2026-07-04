@@ -84,6 +84,10 @@ export const useRegisterUser = () => {
     mutationFn: async (credentials: RegisterType) => {
       const { data } = await API.post("/v1/users/register", credentials)
       return data;
+    },
+    onSuccess: () => {
+      toast.success("Registered successfully!")
+      window.location.reload();
     }
   })
 }
@@ -97,6 +101,8 @@ export const useLogUser = () => {
     },
     onSuccess: (userData) => {
       queryClient.setQueryData(['users', 'profile'], userData)
+      toast.success("Logged in successfully!")
+      window.location.reload();
     }
   })
 }
@@ -124,6 +130,7 @@ export const useLogout = () => {
       queryClient.clear();
       localStorage.removeItem('authToken');
       toast.success("Logout successfully!")
+      window.location.reload();
     },
     onError: (error) => {
       console.error("Logout error", error)

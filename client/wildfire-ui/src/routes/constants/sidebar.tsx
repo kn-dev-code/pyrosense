@@ -10,33 +10,63 @@ import { FeatherShieldCheck } from "@subframe/core";
 import { FeatherTriangleAlert } from "@subframe/core";
 import { FeatherZap } from "@subframe/core";
 import { IconWithBackground } from "../../ui";
+import { useGetUser } from "../../hooks/use-auth";
 
-const SideBar = () => {
+
+  
+  const SideBar = () => {
+   const {data:user} = useGetUser();
+
     return (
-        <div className="flex flex-initial flex-col justify-between pl-10 border-r-2 w-[15%] border-b-2 h-screen [&>div[class*='items-start']]:">
-            {/* Header */}
-            <div className = "flex flex-col items-start">  
-                <span className="text-md">Pyro Intelligence</span>
-                <span className="text-md">Wildfire Engine</span>
-                
-                </div>
-
-            {/* Access Menu */}
-            <div className = "flex flex-col justify-center"> 
-                <span className="text-sm text-[#868686]"><FeatherMap />Dashboard / Map</span>
-                <span className="text-sm text-[#868686]"><FeatherCloudSun />Micro Climate</span>
-                <span className="text-sm text-[#868686]"><FeatherFlame />Incident Logger</span>
-                </div>
-
-
-            {/* Bottom Header */}
-            <div className = "flex flex-col justify-end">
-                <span className="text-sm text-[#000000] font-bold">Example Name</span>
-                <span className="text-sm text-[#808080]">Example Role</span>
-                </div>
-
+      <div className="flex flex-col justify-between pl-6 pr-4 border-r-2 border-b-2 w-[15%] h-screen pt-8 pb-8 bg-white select-none">
+        
+        {/* Top Half Stack */}
+        <div className="flex flex-col gap-y-8 relative bottom-24">
+          
+          {/* Header Branding Row */}
+          <div className="flex items-center gap-x-3 ">
+            <IconWithBackground className = "" variant="error" size="large" icon={<FeatherFlame />} />
+            <div className="flex flex-col shrink-0">
+              <span className="text-md font-bold text-black tracking-tight">Pyro Intelligence</span>
+              <span className="text-sm text-[#a79f9f] font-medium">Wildfire Engine</span>
+            </div>
+          </div>
+  
+          {/* Access Menu Block */}
+          <div className="flex flex-col gap-y-3 ">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+              Access Menu
+            </span>
+            
+            {/* Nav Item 1 */}
+            <div className="flex items-center gap-x-3 text-sm font-medium text-[#868686]  hover:text-[#7193E8] hover:bg-[#EFF6FF] transition-colors cursor-pointer py-1.5">
+              <FeatherMap className="w-4 h-4 shrink-0" />
+              <span>Dashboard / Map</span>
+            </div>
+            
+            {/* Nav Item 2 */}
+            <div className="flex items-center gap-x-3 text-sm font-medium text-[#868686] hover:text-[#7193E8] hover:bg-[#EFF6FF] transition-colors cursor-pointer py-1.5">
+              <FeatherCloudSun className="w-4 h-4 shrink-0" />
+              <span>Micro Climate</span>
+            </div>
+            
+            {/* Nav Item 3 */}
+            <div className="flex items-center gap-x-3 text-sm font-medium text-[#868686] hover:text-[#7193E8] hover:bg-[#EFF6FF]  transition-colors cursor-pointer py-1.5">
+              <FeatherFlame className="w-4 h-4 shrink-0" />
+              <span>Incident Logger</span>
+            </div>
+          </div>
+  
+        </div>   
+  
+        {/* Bottom Profile Section */}
+        <div className="flex flex-col gap-y-0.5 pt-4 border-t border-gray-100">
+          <span className="text-sm text-black font-bold">{user.username}</span>
+          <span className="text-xs text-[#808080] font-medium">{user.role.toUpperCase()}</span>
         </div>
-    )
-}
-
-export default SideBar
+  
+      </div>
+    );
+  };
+  
+  export default SideBar;
