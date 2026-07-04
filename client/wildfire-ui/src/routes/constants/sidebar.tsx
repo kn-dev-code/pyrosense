@@ -18,6 +18,7 @@ const SideBar = () => {
             <div className = "flex flex-col items-start">  
                 <span className="text-md">Pyro Intelligence</span>
                 <span className="text-md">Wildfire Engine</span>
+                
                 </div>
 
             {/* Access Menu */}

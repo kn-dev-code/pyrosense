@@ -1,6 +1,7 @@
 import type { LoginType, RegisterType } from "../types/user/user-types";
 import { useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
 import { API } from "../ui/lib/api";
+import {toast} from "sonner"
 export type UpdateType = {
   username?: string;
   email?: string;
@@ -122,6 +123,7 @@ export const useLogout = () => {
     onSuccess: () => {
       queryClient.clear();
       localStorage.removeItem('authToken');
+      toast.success("Logout successfully!")
     },
     onError: (error) => {
       console.error("Logout error", error)
