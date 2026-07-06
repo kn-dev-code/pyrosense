@@ -1,4 +1,4 @@
-import { FeatherChrome, FeatherFlame } from "@subframe/core";
+import { FeatherFlame } from "@subframe/core";
 import { Button } from "../../../ui/components/ui/button";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

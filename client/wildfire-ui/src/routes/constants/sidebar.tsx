@@ -11,6 +11,7 @@ import { FeatherTriangleAlert } from "@subframe/core";
 import { FeatherZap } from "@subframe/core";
 import { IconWithBackground } from "../../ui";
 import { useGetUser } from "../../hooks/use-auth";
+import { Link } from "react-router-dom";
 
 
   
@@ -18,14 +19,14 @@ import { useGetUser } from "../../hooks/use-auth";
    const {data:user} = useGetUser();
 
     return (
-      <div className="flex flex-col justify-between pl-6 pr-4 border-r-2 border-b-2 w-[15%] h-screen pt-8 pb-8 bg-white select-none">
+      <div className="flex flex-col justify-between pl-6 pr-4 border-gray-100 border-r-2 border-b-2 w-[15%] h-screen pt-8 pb-8 bg-white select-none">
         
         {/* Top Half Stack */}
         <div className="flex flex-col gap-y-8 relative bottom-24">
           
           {/* Header Branding Row */}
           <div className="flex items-center gap-x-3 ">
-            <IconWithBackground className = "" variant="error" size="large" icon={<FeatherFlame />} />
+            <Link className = "hover:cursor-pointer" to = "/" ><IconWithBackground variant="error" size="large" icon={<FeatherFlame />} /></Link>
             <div className="flex flex-col shrink-0">
               <span className="text-md font-bold text-black tracking-tight">Pyro Intelligence</span>
               <span className="text-sm text-[#a79f9f] font-medium">Wildfire Engine</span>

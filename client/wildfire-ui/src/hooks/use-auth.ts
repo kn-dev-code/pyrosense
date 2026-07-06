@@ -151,6 +151,3 @@ export const useGoogleAuth = () => {
     }
   })
 }
-
-// isUpdating, isLoggingOut, isSigningUp, isLoggingIn
-// isModelPredicting, isRetrieving
