@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
    const {data:user} = useGetUser();
 
     return (
-      <div className="flex flex-col justify-between pl-6 pr-4 border-gray-100 border-r-2 border-b-2 w-[15%] h-screen pt-8 pb-8 bg-white select-none">
+      <div className="flex flex-col justify-between pl-6 pr-4 border-gray-100 border-r-2 border-b-2 w-[15%] pt-8 pb-8 bg-white select-none h-screen">
         
         {/* Top Half Stack */}
         <div className="flex flex-col gap-y-8 relative bottom-24">
@@ -61,7 +61,7 @@ import { Link } from "react-router-dom";
         </div>   
   
         {/* Bottom Profile Section */}
-        <div className="flex flex-col gap-y-0.5 pt-4 border-t border-gray-100">
+        <div className="flex flex-col gap-y-0.5 pb-14 border-t border-[#848484]">
           <span className="text-sm text-black font-bold">{user.username}</span>
           <span className="text-xs text-[#808080] font-medium">{user.role.toUpperCase()}</span>
         </div>
