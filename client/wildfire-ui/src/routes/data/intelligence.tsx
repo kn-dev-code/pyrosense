@@ -13,7 +13,7 @@ import { FeatherZap } from "@subframe/core"
 import { FeatherMapPin } from "@subframe/core"
 import { FeatherScan } from "@subframe/core"
 import 'leaflet/dist/leaflet.css';
-import { MapContainer } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Card } from "../../ui/components/ui/card"
 import { IconWithBackground } from "../../ui"
 const Intelligence = () => {
@@ -48,6 +48,7 @@ const Intelligence = () => {
   }
 
   const capitalizeLetter = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+  const position: [number, number] = [51.505, -0.09];
 
   return (
     <div className="bg-white w-screen overflow-hidden h-screen">
@@ -64,7 +65,7 @@ const Intelligence = () => {
       <SideBar />
 
       {/* Coordinate Box */}
-      <div className="p-1 border-2 border-[#c3c0c0] flex flex-col-2 place-items-center flex-1 max-w-sm fixed left-62 translate-y-[-114%] bg-white rounded-lg">
+      <div className="p-1 border-2 border-[#c3c0c0] flex flex-col-2 place-items-center flex-1 max-w-sm fixed left-62 translate-y-[-110%] bg-white rounded-lg">
         <div className="p-4 flex flex-col max-w-sm">
           <div className="border-b-2 border-[#c3c0c0] w-[168.5%] relative right-4 flex flex-col justify-center items-center pb-3.5">
             <h1 className="font-bold text-md"><IconWithBackground className="relative right-6 top-5.5" color="blue" icon={<FeatherScan />} />Geospatial Bounding Box</h1>
@@ -123,32 +124,40 @@ const Intelligence = () => {
             </div>
           </form>
         </div>
-
         {/* Hotspot Box */}
         <div className="flex flex-col ml-44">
 
           {/* Hotspot Map Card */}
-          <Card className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm w-xl mb-80 h-[120%]">
+          <Card className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm w-xl mb-96 h-[120%]">
             <div className="flex justify-between items-center pb-3 border-b">
               <div className="flex items-center gap-2">
-                <FeatherMapPin />
+                <FeatherMapPin className="text-blue-500" />
                 <h1 className="font-bold text-md text-gray-900">Interactive Hotspot Map</h1>
               </div>
               <Button className="bg-slate-100 text-slate-700 hover:bg-slate-200"><FeatherSatellite /> Live FIRMS</Button>
             </div>
 
             {/* Leaflet Map Box Container */}
-            <div className="w-full h-[200px] mt-4 rounded-md overflow-hidden bg-slate-100">
+            <div id="map" className="w-full h-[400px] mt-4 rounded-md overflow-hidden bg-slate-100 border-2 border-black ">
               {/* <MapContainer ... /> will mount directly here safely */}
+              <MapContainer center={position} zoom={13} style={{ height: '600px' }}>
+                <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">
+                </TileLayer>
+                <Marker position={position} draggable={true}>
+                  <Popup>
+                    This is a draggable marker!
+                  </Popup>
+                </Marker>
+              </MapContainer>
             </div>
           </Card>
 
           {/* Result Box (Table) can drop directly down here cleanly */}
         </div>
+        {/* remember */}
       </div>
-
     </div>
-
   )
 }
 
