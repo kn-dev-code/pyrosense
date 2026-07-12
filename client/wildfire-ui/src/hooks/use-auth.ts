@@ -1,7 +1,7 @@
 import type { LoginType, RegisterType } from "../types/user/user-types";
-import { useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { API } from "../ui/lib/api";
-import {toast} from "sonner"
+import { toast } from "sonner"
 export type UpdateType = {
   username?: string;
   email?: string;
@@ -142,12 +142,12 @@ export const useLogout = () => {
 export const useGoogleAuth = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async(credential: string) => {
-      const {data} = await API.post("/v1/users/google-auth", {token_str: credential})
+    mutationFn: async (credential: string) => {
+      const { data } = await API.post("/v1/users/google-auth", { token_str: credential })
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['users', 'profile']})
+      queryClient.invalidateQueries({ queryKey: ['users', 'profile'] })
     }
   })
 }

@@ -16,7 +16,7 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Card } from "../../ui/components/ui/card"
 import { IconWithBackground } from "../../ui"
-import { Table } from "../../ui/components/ui/table"
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../../ui/components/ui/table"
 const Intelligence = () => {
   const navigate = useNavigate();
   const { data: user } = useGetUser();
@@ -24,7 +24,6 @@ const Intelligence = () => {
 
   if (!user) {
     navigate("/");
-    return null;
   }
 
   const coordinateValidation = z.object({
@@ -127,21 +126,20 @@ const Intelligence = () => {
         </div>
         {/* Hotspot Box */}
         <div className="flex flex-col ml-44">
-
           {/* Hotspot Map Card */}
-          <Card className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm w-[295%] relative bottom-72">
-            <div className="flex justify-between items-center pb-3 border-b">
+          <Card className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm w-[295%] relative bottom-44">
+            <div className="flex justify-between items-center pb-3 border-b max-h-full">
               <div className="flex items-center gap-2">
                 <FeatherMapPin className="text-blue-500" />
                 <h1 className="font-bold text-md text-gray-900">Interactive Hotspot Map</h1>
               </div>
-              <Button className="bg-slate-100 text-slate-700 hover:bg-slate-200"><FeatherSatellite/>Live FIRMS</Button>
+              <Button className="bg-slate-100 text-slate-700 hover:bg-slate-200"><FeatherSatellite />Live FIRMS</Button>
             </div>
 
             {/* Leaflet Map Box Container */}
-            <div id="map" className="overflow-hidden border-2 border-gray-100 bg-white rounded-lg max-w-full">
+            <div id="map" className="overflow-hidden border-2 border-gray-100 bg-white rounded-lg h-60">
               <MapContainer className="" center={position} zoom={13}>
-                <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png">
                 </TileLayer>
                 <Marker position={position} draggable={true}>
@@ -152,11 +150,39 @@ const Intelligence = () => {
               </MapContainer>
             </div>
           </Card>
-          <div className="">
+          {/* Result box */}
+          <Card className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm w-[295%] relative">
             <Table>
+              {/* Top Row (Header Names) */}
+              <TableHeader>
+                <TableRow className = "flex flex-row justify-between">
+                  <TableCaption className="font-bold text-md">Analyzed Results</TableCaption>
+                  <TableCaption> coordinates saved</TableCaption>
+                </TableRow>
+              </TableHeader>
+              {/* Middle Row (Header Names) */}
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    Latitude
+                  </TableHead>
+                  <TableHead>
+                    Longitude
+                  </TableHead>
+                  <TableHead>
+                    Risk Level
+                  </TableHead>
+                  <TableHead>
+                    Confidence Breakdown
+                  </TableHead>
+                </TableRow>
+                </TableHeader>
+                {/* Metric Row */}
+                  <TableBody>
 
+                  </TableBody>
             </Table>
-          </div>
+          </Card>
         </div>
       </div>
     </div>
