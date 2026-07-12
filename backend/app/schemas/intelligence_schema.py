@@ -1,20 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Enum
 from datetime import date
 
 
-class FirePredictionRequest(BaseModel):
+class CoordinateRequest(BaseModel):
   west_longitude: float
   south_latitude: float
   east_longitude: float
   north_latitude: float
 
 
-class FireDataResponse(BaseModel):
+class CoordinateResponse(BaseModel):
   latitude: float
   longitude: float
-  brightness: float
-  frp: float
-  acq_date: date
-  acq_time: int
-  confidence: bool
-  daynight: str
+  risk_level: str = Enum("Low", "Moderate", "High", "Extreme")
+  confidence_breakdown: str
+  prediction_date: date

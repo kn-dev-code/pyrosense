@@ -4,10 +4,10 @@ import { API } from "../ui/lib/api";
 import type { ModelInfo } from "../types/model/model-types";
 
 
-interface ModelResponse {
-    id: string;
+interface QueryModelResponse {
     latitude: number;
     longitude: number;
+    riskLevel: string;
     confidence: string;
 }
 
@@ -27,7 +27,7 @@ export const useCreatePrediction = () => {
 }
 
 export const useGetPrediction = () => {
-    return useQuery<ModelResponse>({
+    return useQuery<QueryModelResponse>({
         queryKey: ['model', 'prediction'],
         queryFn: async () => {
             try {

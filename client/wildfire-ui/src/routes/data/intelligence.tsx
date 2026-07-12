@@ -179,7 +179,7 @@ const Intelligence = () => {
                 </TableHeader>
                 {/* Metric Row */}
                   <TableBody>
-
+                
                   </TableBody>
             </Table>
           </Card>

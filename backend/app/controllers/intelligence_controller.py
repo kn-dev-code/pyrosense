@@ -1,14 +1,19 @@
 from fastapi import status, HTTPException
 from sqlmodel import Session
 from app.controllers.fire_controller import _verify_active_user
-from app.schemas.intelligence_schema import FireDataResponse, FirePredictionRequest
+from app.schemas.intelligence_schema import CoordinateRequest
 from app.api.nasa_api import base_url, nasa_api
 import httpx
 import joblib
 from joblib import Memory
 import pandas as pd
+import os
+from dotenv import load_dotenv
 
 
+
+load_dotenv()
+NASA_API = os.getenv("NASA_MAP_KEY")
 cachedir = './wildfire_model_cache'
 memory = Memory(cachedir, verbose=0)
 try:
@@ -29,7 +34,7 @@ def run_cached_inference(features_json: str):
     probabilities = model.predict_proba(features_df)
     return predictions.tolist(), probabilities.tolist()
 
-async def query_intelligence_controller(user_id: int, prediction_request: FirePredictionRequest, db: Session):
+async def query_intelligence_controller(user_id: int, prediction_request: CoordinateRequest, db: Session):
   _verify_active_user(user_id, db)
   west_lon = prediction_request.west_longitude
   south_lat = prediction_request.south_latitude
@@ -38,7 +43,7 @@ async def query_intelligence_controller(user_id: int, prediction_request: FirePr
   source = "VIIRS_NOAA20_NRT"
   day_range = 1
     
-  prediction_url = f"https://firms.modaps.eosdis.nasa.gov/api/area/YOUR_API_KEY/{source}/{west_lon},{south_lat},{east_lon},{north_lat}/{day_range}"
+  prediction_url = f"https://firms.modaps.eosdis.nasa.gov/api/area/NASA_API/{source}/{west_lon},{south_lat},{east_lon},{north_lat}/{day_range}"
   try:
       async with httpx.AsyncClient() as client:
             response = await client.get(prediction_url)
@@ -53,19 +58,21 @@ async def query_intelligence_controller(user_id: int, prediction_request: FirePr
     
   df['is_daytime'] = df['daynight'].map({'D': 1, 'N': 0}).fillna(0).astype(int) if 'daynight' in df.columns else 1
   df['confidence_num'] = df['confidence'].map({'low': 0, 'nominal': 1, 'high': 2}).fillna(0) if df['confidence'].dtype == 'O' else df['confidence']
-    
   df['scan'] = pd.to_numeric(df['scan']).fillna(0.4)
   df['track'] = pd.to_numeric(df['track']).fillna(0.4)
   df['bright_ti4'] = pd.to_numeric(df['bright_ti4']).fillna(320.0)
   df['bright_ti5'] = pd.to_numeric(df['bright_ti5']).fillna(295.0)
   df['frp'] = pd.to_numeric(df['frp']).fillna(5.0)
-
   df['pixel_area'] = df['scan'] * df['track']
   df['thermal_diff'] = df['bright_ti4'] / df['bright_ti5']
   df['thermal_ratio'] = df['bright_ti4'] / df['bright_ti5']
+  df['risk_level']
   feature_order = [
         'track', 'scan', 'bright_ti5', 'bright_ti4', 'latitude', 'longitude',
         'is_daytime', 'confidence_num', 'pixel_area', 'thermal_diff', 'thermal_ratio'
+    ]
+    default_feature_order = [
+        'latitude', 'longitude', 'risk_level', 'confidence_num'
     ]
   features_df = df[feature_order]
   features_json = features_df.to_json()
@@ -94,3 +101,9 @@ async def query_intelligence_controller(user_id: int, prediction_request: FirePr
         "hotspots_found": len(analyzed_results),
         "data": analyzed_results
     }
+
+
+def get_coordinate_data_controller(user_id: int, db: Session):
+    _verify_active_user(user_id, db)
+
+   
