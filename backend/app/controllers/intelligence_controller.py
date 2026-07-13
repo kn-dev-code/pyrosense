@@ -4,106 +4,94 @@ from app.controllers.fire_controller import _verify_active_user
 from app.schemas.intelligence_schema import CoordinateRequest
 from app.api.nasa_api import base_url, nasa_api
 import httpx
+import json
 import joblib
 from joblib import Memory
 import pandas as pd
 import os
+import numpy as np
 from dotenv import load_dotenv
-
-
 
 load_dotenv()
 NASA_API = os.getenv("NASA_MAP_KEY")
 cachedir = './wildfire_model_cache'
 memory = Memory(cachedir, verbose=0)
+
 try:
     model = joblib.load('best_xgb.pkl')
 except Exception as e:
     print(f"Production Warning: Model file not found: {e}")
     model = None
-def assign_risk_label(code: int) -> str:
-    mapping = {0: "Low", 1: "Moderate", 2: "High", 3: "Extreme"}
-    return mapping.get(code, "Unknown")
+
+# Helper function placed cleanly outside the cached inference block
+def assign_risk_level(frp_value):
+    if frp_value < 5.0:
+        return 0
+    elif frp_value < 15.0:
+        return 1
+    elif frp_value < 40.0:
+        return 2
+    else:
+        return 3
 
 @memory.cache
 def run_cached_inference(features_json: str):
     if model is None:
         return [], []
-    features_df = pd.read_json(features_json)
-    predictions = model.predict(features_df)
-    probabilities = model.predict_proba(features_df)
+        
+    raw_df = pd.read_json(features_json)
+    raw_df['risk_level'] = raw_df['frp'].apply(assign_risk_level)
+    raw_df['is_daytime'] = raw_df['daynight'].map({'D': 1, 'N': 0})
+    raw_df['pixel_area'] = raw_df['scan'] * raw_df['track']
+    raw_df['frp_density'] = raw_df['frp'] / raw_df['pixel_area']
+    raw_df['thermal_diff'] = raw_df['bright_ti4'] - raw_df['bright_ti5']
+    raw_df['thermal_ratio'] = raw_df['bright_ti4'] / raw_df['bright_ti5']
+    
+    raw_df['is_daytime'] = raw_df['is_daytime'].fillna(0).astype(int)
+    if raw_df['confidence'].dtype == 'O':
+        raw_df['confidence_num'] = raw_df['confidence'].map({'low': 0, 'nominal': 1, 'high': 2})
+    else:
+        raw_df['confidence_num'] = raw_df['confidence']
+        
+    raw_df['confidence_num'] = pd.to_numeric(raw_df['confidence_num'], errors='coerce').fillna(0).astype(float)
+
+    feature_list = [
+        'latitude', 'longitude', 'pixel_area', 'thermal_diff', 'thermal_ratio', 'confidence_num', 'is_daytime'
+    ]
+    X_inference = raw_df[feature_list]
+    
+    predictions = model.predict(X_inference)
+    probabilities = model.predict_proba(X_inference)
+    
     return predictions.tolist(), probabilities.tolist()
 
+
 async def query_intelligence_controller(user_id: int, prediction_request: CoordinateRequest, db: Session):
-  _verify_active_user(user_id, db)
-  west_lon = prediction_request.west_longitude
-  south_lat = prediction_request.south_latitude
-  east_lon = prediction_request.east_longitude
-  north_lat = prediction_request.north_latitude
-  source = "VIIRS_NOAA20_NRT"
-  day_range = 1
+    _verify_active_user(user_id, db)
+    west_lon = prediction_request.west_longitude
+    south_lat = prediction_request.south_latitude
+    east_lon = prediction_request.east_longitude
+    north_lat = prediction_request.north_latitude
+    source = "VIIRS_NOAA20_NRT"
+    day_range = 1
+
+    prediction_url = f"https://firms.modaps.eosdis.nasa.gov/api/area/{NASA_API}/{source}/{west_lon},{south_lat},{east_lon},{north_lat}/{day_range}"
     
-  prediction_url = f"https://firms.modaps.eosdis.nasa.gov/api/area/NASA_API/{source}/{west_lon},{south_lat},{east_lon},{north_lat}/{day_range}"
-  try:
-      async with httpx.AsyncClient() as client:
+    try:
+        async with httpx.AsyncClient() as client:
             response = await client.get(prediction_url)
             response.raise_for_status() 
-  except httpx.RequestError:
+    except httpx.RequestError:
         raise HTTPException(status_code=503, detail="NASA FIRMS service unreachable.")
 
-  raw_hotspots = response.json()
-  if not raw_hotspots:
+    raw_hotspots = response.json()
+    if not raw_hotspots:
         return {"status": "success", "hotspots_found": 0, "data": []}
-  df = pd.DataFrame(raw_hotspots)
-    
-  df['is_daytime'] = df['daynight'].map({'D': 1, 'N': 0}).fillna(0).astype(int) if 'daynight' in df.columns else 1
-  df['confidence_num'] = df['confidence'].map({'low': 0, 'nominal': 1, 'high': 2}).fillna(0) if df['confidence'].dtype == 'O' else df['confidence']
-  df['scan'] = pd.to_numeric(df['scan']).fillna(0.4)
-  df['track'] = pd.to_numeric(df['track']).fillna(0.4)
-  df['bright_ti4'] = pd.to_numeric(df['bright_ti4']).fillna(320.0)
-  df['bright_ti5'] = pd.to_numeric(df['bright_ti5']).fillna(295.0)
-  df['frp'] = pd.to_numeric(df['frp']).fillna(5.0)
-  df['pixel_area'] = df['scan'] * df['track']
-  df['thermal_diff'] = df['bright_ti4'] / df['bright_ti5']
-  df['thermal_ratio'] = df['bright_ti4'] / df['bright_ti5']
-  df['risk_level']
-  feature_order = [
-        'track', 'scan', 'bright_ti5', 'bright_ti4', 'latitude', 'longitude',
-        'is_daytime', 'confidence_num', 'pixel_area', 'thermal_diff', 'thermal_ratio'
-    ]
-    default_feature_order = [
-        'latitude', 'longitude', 'risk_level', 'confidence_num'
-    ]
-  features_df = df[feature_order]
-  features_json = features_df.to_json()
-    
-  predictions, probabilities = run_cached_inference(features_json)
-    
-  analyzed_results = []
-  for index, hotspot in enumerate(raw_hotspots):
-        pred_code = predictions[index]
-        probs = probabilities[index]
         
-        analyzed_results.append({
-            "latitude": float(hotspot.get("latitude")),
-            "longitude": float(hotspot.get("longitude")),
-            "predicted_risk_level": assign_risk_label(pred_code),
-            "confidence_probabilities": {
-                "Low": float(probs[0]),
-                "Moderate": float(probs[1]),
-                "High": float(probs[2]),
-                "Extreme": float(probs[3])
-            }
-        })
-        
-  return {
-        "status": "success",
-        "hotspots_found": len(analyzed_results),
-        "data": analyzed_results
-    }
-
+    # Ready for you to pass raw_hotspots into your cached inference function here...
+    coordinates = json.dumps(raw_hotspots)
+    preds, probs = run_cached_inference(coordinates)
+    return {"status": "success", "hotspots_found": len(raw_hotspots), "data": {"predictions": preds, "probabilities": probs}}
 
 def get_coordinate_data_controller(user_id: int, db: Session):
     _verify_active_user(user_id, db)
-
-   
