@@ -1,5 +1,5 @@
 from fastapi import status, HTTPException
-from sqlmodel import Session
+from sqlmodel import Session, select
 from app.controllers.fire_controller import _verify_active_user
 from app.schemas.intelligence_schema import CoordinateRequest
 from app.api.nasa_api import base_url, nasa_api
@@ -11,6 +11,8 @@ import pandas as pd
 import os
 import numpy as np
 from dotenv import load_dotenv
+from app.models.prediction import PredictionRecord
+from app.models.user import UserRecord
 
 load_dotenv()
 NASA_API = os.getenv("NASA_MAP_KEY")
@@ -91,7 +93,25 @@ async def query_intelligence_controller(user_id: int, prediction_request: Coordi
     # Ready for you to pass raw_hotspots into your cached inference function here...
     coordinates = json.dumps(raw_hotspots)
     preds, probs = run_cached_inference(coordinates)
+    db_coordinate_data = PredictionRecord(
+        user_id = user_id,
+        west_lon = prediction_request.west_longitude,
+        south_lat = prediction_request.south_latitude,
+        east_lon = prediction_request.east_longitude,
+        north_lat = prediction_request.north_latitude
+    )
+    db.add(db_coordinate_data)
+    db.commit()
+    db.refresh(db_coordinate_data)
     return {"status": "success", "hotspots_found": len(raw_hotspots), "data": {"predictions": preds, "probabilities": probs}}
-
-def get_coordinate_data_controller(user_id: int, db: Session):
+def get_coordinate_data_controller(user_id: int, prediction_id: int, db: Session):
     _verify_active_user(user_id, db)
+    find_coordinate_data = select(PredictionRecord).where(PredictionRecord.user_id == user_id, PredictionRecord.id == prediction_id)
+    result = db.exec(find_coordinate_data).first()
+
+    if not result:
+        raise HTTPException(status_code = 404, detail = "Prediction record not found")
+    
+    return {"status": "success", "message": "Prediction record successful!", "data": result}
+
+    
