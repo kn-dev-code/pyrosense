@@ -1,4 +1,4 @@
-import { FeatherSatellite, FeatherShieldCheck } from "@subframe/core"
+import { FeatherSatellite, FeatherShieldCheck, toast } from "@subframe/core"
 import { Button } from "../../ui/components/ui/button"
 import SideBar from "../constants/sidebar"
 import { useNavigate } from "react-router"
@@ -20,6 +20,9 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 const Intelligence = () => {
   const navigate = useNavigate();
   const { data: user } = useGetUser();
+  if (user == undefined) {
+    return user;
+  } 
   const { mutate: runPrediction, isPending } = useCreatePrediction();
 
   if (!user) {
@@ -40,9 +43,14 @@ const Intelligence = () => {
   });
 
   const onSubmit = (data: coordinateQuery) => {
-    runPrediction(data, {
+    runPrediction({
+      "west_longitude": data.westLon,
+      "south_latitude": data.southLat,
+      "east_longitude": data.eastLon,
+      "north_latitude": data.northLat,
+    },{
       onSuccess: () => {
-        navigate("/field/reports")
+        toast.success("Data predictions successful!")
       }
     })
   }

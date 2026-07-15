@@ -14,14 +14,15 @@ interface QueryModelResponse {
 export const useCreatePrediction = () => {
     return useMutation({
         mutationFn: async (coordinateData: ModelInfo) => {
-            const { data } = await API.post('/v1/intelligence/predict', coordinateData);
-            return data;
+            const { data } = await API.post('/v1/intelligence/create_prediction', coordinateData);
+            return data.predictions.preds;
         },
         onSuccess: () => {
             toast.success("Model prediction successful!")
         },
         onError: (e: any) => {
-            toast.error(`API ERROR: ${e.detail.message}`)
+            const apiError = e.response?.data?.detail?.[0]?.msg || e.response?.data?.detail || e.message || "Unknown error";
+            toast.error(`API ERROR: ${apiError}`)
         }
     })
 }
