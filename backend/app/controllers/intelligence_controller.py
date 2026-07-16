@@ -1,21 +1,21 @@
 from fastapi import status, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, select, desc
 from app.controllers.fire_controller import _verify_active_user
 from app.schemas.intelligence_schema import CoordinateRequest
+from typing import Optional
 from app.api.nasa_api import base_url, nasa_api
 import httpx
 import json
+import csv
+import io
 import joblib
 from joblib import Memory
 import pandas as pd
-import os
-import numpy as np
 from dotenv import load_dotenv
 from app.models.prediction import PredictionRecord
 from app.models.user import UserRecord
-
+from app.api.nasa_api import nasa_api
 load_dotenv()
-NASA_API = os.getenv("NASA_MAP_KEY")
 cachedir = './wildfire_model_cache'
 memory = Memory(cachedir, verbose=0)
 
@@ -77,7 +77,7 @@ async def query_intelligence_controller(user_id: int, prediction_request: Coordi
     source = "VIIRS_NOAA20_NRT"
     day_range = 1
 
-    prediction_url = f"https://firms.modaps.eosdis.nasa.gov/api/area/{NASA_API}/{source}/{west_lon},{south_lat},{east_lon},{north_lat}/{day_range}"
+    prediction_url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{nasa_api}/{source}/{west_lon},{south_lat},{east_lon},{north_lat}/{day_range}"
     
     try:
         async with httpx.AsyncClient() as client:
@@ -86,7 +86,10 @@ async def query_intelligence_controller(user_id: int, prediction_request: Coordi
     except httpx.RequestError:
         raise HTTPException(status_code=503, detail="NASA FIRMS service unreachable.")
 
-    raw_hotspots = response.json()
+    csv_data = response.text
+    csv_file = io.StringIO(csv_data)
+    reader = csv.DictReader(csv_file)
+    raw_hotspots = list(reader)
     if not raw_hotspots:
         return {"status": "success", "hotspots_found": 0, "data": []}
         
@@ -104,14 +107,22 @@ async def query_intelligence_controller(user_id: int, prediction_request: Coordi
     db.commit()
     db.refresh(db_coordinate_data)
     return {"status": "success", "hotspots_found": len(raw_hotspots), "data": {"predictions": preds, "probabilities": probs}}
-def get_coordinate_data_controller(user_id: int, prediction_id: int, db: Session):
+def get_coordinate_data_controller(user_id: int, db: Session, prediction_id: Optional[int] = None):
     _verify_active_user(user_id, db)
-    find_coordinate_data = select(PredictionRecord).where(PredictionRecord.user_id == user_id, PredictionRecord.id == prediction_id)
+    
+    if prediction_id is not None:
+        find_coordinate_data = select(PredictionRecord).where(
+            PredictionRecord.user_id == user_id, 
+            PredictionRecord.coordinate_id == prediction_id
+        )
+    else:
+        find_coordinate_data = select(PredictionRecord).where(
+            PredictionRecord.user_id == user_id
+        ).order_by(desc(PredictionRecord.coordinate_id)) 
+
     result = db.exec(find_coordinate_data).first()
 
     if not result:
-        raise HTTPException(status_code = 404, detail = "Prediction record not found")
+        raise HTTPException(status_code=404, detail="Prediction record not found")
     
-    return {"status": "success", "message": "Prediction record successful!", "data": result}
-
-    
+    return {"status": "success", "message": "Prediction record retrieved successfully!", "data": result}

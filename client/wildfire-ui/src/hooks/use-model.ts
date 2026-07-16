@@ -15,10 +15,10 @@ export const useCreatePrediction = () => {
     return useMutation({
         mutationFn: async (coordinateData: ModelInfo) => {
             const { data } = await API.post('/v1/intelligence/create_prediction', coordinateData);
-            return data.predictions.preds;
+            return data.predictions;
         },
         onSuccess: () => {
-            toast.success("Model prediction successful!")
+            toast.success("Model prediction successful!");
         },
         onError: (e: any) => {
             const apiError = e.response?.data?.detail?.[0]?.msg || e.response?.data?.detail || e.message || "Unknown error";
@@ -28,7 +28,7 @@ export const useCreatePrediction = () => {
 }
 
 export const useGetPrediction = () => {
-    return useQuery<QueryModelResponse>({
+    return useQuery<QueryModelResponse[]>({
         queryKey: ['model', 'prediction'],
         queryFn: async () => {
             try {
